@@ -15,12 +15,12 @@ const Hero = () => {
             Access trusted healthcare services, book appointments, manage records, and find critical resources easily.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/dashboard">
+            <Link to="/login?tab=signup">
               <Button size="lg" className="bg-white text-indigo-900 hover:bg-indigo-50 px-8 py-4 text-lg font-semibold">
                 Get Started
               </Button>
             </Link>
-            <Link to="/appointments">
+            <Link to="/login">
               <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-indigo-900 px-8 py-4 text-lg font-semibold">
                 Book Appointment
               </Button>
