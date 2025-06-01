@@ -2,40 +2,108 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, MapPin, Bell } from "lucide-react";
+import { Clock, Users, MapPin, Bell, Phone } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Queue = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [queueData, setQueueData] = useState([
-    {
-      id: 1,
-      department: "Cardiology",
-      doctor: "Dr. Rajesh Kumar",
-      appointmentTime: "10:00 AM",
-      currentPosition: 3,
-      estimatedWait: "25 minutes",
-      status: "waiting",
-      location: "Room 201, 2nd Floor"
-    },
-    {
-      id: 2,
-      department: "General Medicine",
-      doctor: "Dr. Priya Sharma", 
-      appointmentTime: "02:30 PM",
-      currentPosition: 1,
-      estimatedWait: "5 minutes",
-      status: "next",
-      location: "Room 105, 1st Floor"
-    }
-  ]);
+  const [queueData, setQueueData] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const user = localStorage.getItem('currentUser');
     if (user) {
       setCurrentUser(JSON.parse(user));
     }
+
+    // Load user's appointments for queue
+    const userAppointments = JSON.parse(localStorage.getItem('userAppointments') || '[]');
+    const today = new Date().toDateString();
+    
+    // Filter appointments for today and create queue data
+    const todayAppointments = userAppointments.filter((apt: any) => 
+      new Date(apt.date).toDateString() === today
+    );
+
+    // Transform appointments to queue format with realistic queue positions
+    const queueAppointments = todayAppointments.map((apt: any, index: number) => {
+      const currentTime = new Date();
+      const appointmentTime = new Date(`${apt.date} ${apt.time}`);
+      const timeDiff = appointmentTime.getTime() - currentTime.getTime();
+      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+      
+      let status = 'waiting';
+      let position = Math.floor(Math.random() * 5) + 1; // Random position 1-5
+      let estimatedWait = `${Math.max(5, position * 8)} minutes`;
+      
+      if (minutesDiff <= 15 && minutesDiff > 0) {
+        status = 'next';
+        position = 1;
+        estimatedWait = '5 minutes';
+      } else if (minutesDiff < 0) {
+        status = 'delayed';
+        estimatedWait = '10 minutes';
+      }
+
+      return {
+        id: apt.id,
+        department: apt.department,
+        doctor: `Dr. ${apt.doctorName}`,
+        appointmentTime: apt.time,
+        currentPosition: position,
+        estimatedWait: estimatedWait,
+        status: status,
+        location: `Room ${200 + index + 1}, ${Math.floor(Math.random() * 3) + 1}${index > 0 ? 'st' : 'nd'} Floor`,
+        specialty: apt.specialty || 'General Consultation'
+      };
+    });
+
+    setQueueData(queueAppointments);
+
+    // Load notifications
+    const userNotifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    setNotifications(userNotifications);
+
+    // Simulate queue updates every 30 seconds
+    const interval = setInterval(() => {
+      setQueueData(prevQueue => 
+        prevQueue.map(apt => {
+          if (apt.status === 'waiting' && apt.currentPosition > 1) {
+            const newPosition = Math.max(1, apt.currentPosition - 1);
+            const newWait = `${Math.max(5, newPosition * 8)} minutes`;
+            
+            // Add notification for position update
+            if (newPosition !== apt.currentPosition) {
+              const newNotification = {
+                type: 'queue',
+                message: `Your position for ${apt.doctor} has moved to #${newPosition}`,
+                time: new Date().toLocaleTimeString(),
+                timestamp: Date.now()
+              };
+              
+              setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+              
+              // Update localStorage
+              const updatedNotifications = [newNotification, ...userNotifications].slice(0, 10);
+              localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+            }
+            
+            return {
+              ...apt,
+              currentPosition: newPosition,
+              estimatedWait: newWait,
+              status: newPosition === 1 ? 'next' : 'waiting'
+            };
+          }
+          return apt;
+        })
+      );
+    }, 30000); // Update every 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -54,6 +122,73 @@ const Queue = () => {
       case 'delayed': return 'Delayed';
       default: return 'Unknown';
     }
+  };
+
+  const handleCheckIn = (appointmentId: string) => {
+    toast({
+      title: "Checked In Successfully",
+      description: "You have been checked in for your appointment.",
+    });
+    
+    const newNotification = {
+      type: 'appointment',
+      message: 'Successfully checked in for your appointment',
+      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now()
+    };
+    
+    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
+    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+  };
+
+  const handleRequestWaitUpdate = (appointmentId: string) => {
+    const appointment = queueData.find(apt => apt.id === appointmentId);
+    if (appointment) {
+      toast({
+        title: "Wait Time Update Requested",
+        description: `Current estimated wait: ${appointment.estimatedWait}`,
+      });
+      
+      const newNotification = {
+        type: 'queue',
+        message: `Wait time update: ${appointment.estimatedWait} for ${appointment.doctor}`,
+        time: new Date().toLocaleTimeString(),
+        timestamp: Date.now()
+      };
+      
+      setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+      const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
+      localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+    }
+  };
+
+  const handleReschedule = (appointmentId: string) => {
+    toast({
+      title: "Reschedule Request Sent",
+      description: "Reception will contact you shortly to reschedule your appointment.",
+    });
+    
+    const newNotification = {
+      type: 'appointment',
+      message: 'Reschedule request submitted. Reception will contact you soon.',
+      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now()
+    };
+    
+    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
+    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+  };
+
+  const handleContactReception = () => {
+    const phoneNumber = "tel:12345678910";
+    window.open(phoneNumber, '_self');
+    
+    toast({
+      title: "Calling Reception",
+      description: "Connecting you to reception at 12345678910",
+    });
   };
 
   return (
@@ -77,14 +212,15 @@ const Queue = () => {
                 </CardHeader>
                 <CardContent>
                   {queueData.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {queueData.map((appointment) => (
-                        <div key={appointment.id} className="p-4 border rounded-lg bg-white shadow-sm">
-                          <div className="flex items-start justify-between mb-3">
+                        <div key={appointment.id} className="p-6 border rounded-lg bg-white shadow-sm">
+                          <div className="flex items-start justify-between mb-4">
                             <div>
                               <h3 className="font-semibold text-lg">{appointment.doctor}</h3>
                               <p className="text-gray-600">{appointment.department}</p>
-                              <p className="text-sm text-gray-500 flex items-center mt-1">
+                              <p className="text-sm text-gray-500">{appointment.specialty}</p>
+                              <p className="text-sm text-gray-500 flex items-center mt-2">
                                 <MapPin className="h-4 w-4 mr-1" />
                                 {appointment.location}
                               </p>
@@ -94,7 +230,7 @@ const Queue = () => {
                             </Badge>
                           </div>
                           
-                          <div className="grid grid-cols-3 gap-4 text-center">
+                          <div className="grid grid-cols-3 gap-4 text-center mb-4">
                             <div className="p-3 bg-blue-50 rounded-lg">
                               <Clock className="h-5 w-5 mx-auto mb-1 text-blue-600" />
                               <p className="text-sm font-medium">Appointment</p>
@@ -113,10 +249,34 @@ const Queue = () => {
                           </div>
                           
                           {appointment.status === 'next' && (
-                            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                               <p className="text-green-800 font-medium">🔔 You're next! Please be ready.</p>
                             </div>
                           )}
+                          
+                          <div className="flex gap-2 flex-wrap">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleCheckIn(appointment.id)}
+                              className="bg-indigo-600 hover:bg-indigo-700"
+                            >
+                              Check In
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => handleRequestWaitUpdate(appointment.id)}
+                            >
+                              Request Wait Update
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => handleReschedule(appointment.id)}
+                            >
+                              Reschedule
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -130,7 +290,7 @@ const Queue = () => {
                 </CardContent>
               </Card>
 
-              {/* Queue Statistics */}
+              {/* Department Queue Statistics */}
               <Card>
                 <CardHeader>
                   <CardTitle>Department Queue Status</CardTitle>
@@ -171,42 +331,59 @@ const Queue = () => {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
-                    Check In for Appointment
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    Request Wait Time Update
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    Reschedule Appointment
-                  </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-2"
+                    onClick={handleContactReception}
+                  >
+                    <Phone className="h-4 w-4" />
                     Contact Reception
                   </Button>
+                  <p className="text-xs text-gray-500 text-center">Call: 12345678910</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Notifications</CardTitle>
+                  <CardTitle>Recent Notifications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm font-medium text-blue-800">Queue Update</p>
-                      <p className="text-xs text-blue-600">Your position in Cardiology queue has moved up</p>
-                      <p className="text-xs text-blue-500 mt-1">2 minutes ago</p>
-                    </div>
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm font-medium text-green-800">Ready Soon</p>
-                      <p className="text-xs text-green-600">Dr. Priya Sharma will see you in ~5 minutes</p>
-                      <p className="text-xs text-green-500 mt-1">5 minutes ago</p>
-                    </div>
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-sm font-medium text-yellow-800">Delay Notice</p>
-                      <p className="text-xs text-yellow-600">Cardiology running 10 minutes behind schedule</p>
-                      <p className="text-xs text-yellow-500 mt-1">15 minutes ago</p>
-                    </div>
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {notifications.slice(0, 8).map((notification, index) => (
+                      <div key={index} className={`p-3 rounded-lg border ${
+                        notification.type === 'queue' ? 'bg-blue-50 border-blue-200' :
+                        notification.type === 'appointment' ? 'bg-green-50 border-green-200' :
+                        'bg-yellow-50 border-yellow-200'
+                      }`}>
+                        <p className={`text-sm font-medium ${
+                          notification.type === 'queue' ? 'text-blue-800' :
+                          notification.type === 'appointment' ? 'text-green-800' :
+                          'text-yellow-800'
+                        }`}>
+                          {notification.type === 'queue' ? 'Queue Update' :
+                           notification.type === 'appointment' ? 'Appointment' : 'System'}
+                        </p>
+                        <p className={`text-xs ${
+                          notification.type === 'queue' ? 'text-blue-600' :
+                          notification.type === 'appointment' ? 'text-green-600' :
+                          'text-yellow-600'
+                        }`}>
+                          {notification.message}
+                        </p>
+                        <p className={`text-xs mt-1 ${
+                          notification.type === 'queue' ? 'text-blue-500' :
+                          notification.type === 'appointment' ? 'text-green-500' :
+                          'text-yellow-500'
+                        }`}>
+                          {notification.time}
+                        </p>
+                      </div>
+                    ))}
+                    {notifications.length === 0 && (
+                      <div className="text-center py-4 text-gray-500">
+                        <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-sm">No recent notifications</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -219,8 +396,8 @@ const Queue = () => {
                   <div className="space-y-2 text-sm text-gray-600">
                     <p>• Arrive 15 minutes before your appointment</p>
                     <p>• Bring your ID and insurance card</p>
-                    <p>• Update your contact info for SMS alerts</p>
                     <p>• Check in using the app to save time</p>
+                    <p>• Call reception for urgent changes</p>
                   </div>
                 </CardContent>
               </Card>
