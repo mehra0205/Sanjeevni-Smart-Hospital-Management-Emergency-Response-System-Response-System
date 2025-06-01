@@ -5,8 +5,97 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import Sidebar from "@/components/Sidebar";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    address: '',
+    bloodType: '',
+    height: '',
+    weight: '',
+    allergies: '',
+    emergencyContact: ''
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      const userData = JSON.parse(user);
+      setCurrentUser(userData);
+      setFormData({
+        firstName: userData.name?.split(' ')[0] || '',
+        lastName: userData.name?.split(' ')[1] || '',
+        email: userData.email || '',
+        phone: userData.phone || '',
+        dateOfBirth: userData.dateOfBirth || '',
+        address: userData.address || '',
+        bloodType: userData.bloodType || '',
+        height: userData.height || '',
+        weight: userData.weight || '',
+        allergies: userData.allergies || '',
+        emergencyContact: userData.emergencyContact || ''
+      });
+    }
+  }, []);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveProfile = () => {
+    const updatedUser = {
+      ...currentUser,
+      name: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      phone: formData.phone,
+      dateOfBirth: formData.dateOfBirth,
+      address: formData.address,
+      bloodType: formData.bloodType,
+      height: formData.height,
+      weight: formData.weight,
+      allergies: formData.allergies,
+      emergencyContact: formData.emergencyContact
+    };
+
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    setCurrentUser(updatedUser);
+
+    toast({
+      title: "Profile Updated",
+      description: "Your profile information has been saved successfully.",
+    });
+  };
+
+  const handleSaveMedical = () => {
+    const updatedUser = {
+      ...currentUser,
+      bloodType: formData.bloodType,
+      height: formData.height,
+      weight: formData.weight,
+      allergies: formData.allergies,
+      emergencyContact: formData.emergencyContact
+    };
+
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    setCurrentUser(updatedUser);
+
+    toast({
+      title: "Medical Information Updated",
+      description: "Your medical information has been saved successfully.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
@@ -29,32 +118,57 @@ const Settings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                    <Input defaultValue="Patient" />
+                    <Input 
+                      value={formData.firstName} 
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                    <Input defaultValue="User" />
+                    <Input 
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                  <Input defaultValue="patient.user@example.com" type="email" />
+                  <Input 
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    type="email" 
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                    <Input defaultValue="+1 (555) 123-4567" />
+                    <Input 
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                    <Input defaultValue="1990-01-15" type="date" />
+                    <Input 
+                      value={formData.dateOfBirth}
+                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                      type="date" 
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                  <Input defaultValue="123 Main Street, City, State 12345" />
+                  <Input 
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                  />
                 </div>
-                <Button className="bg-indigo-600 hover:bg-indigo-700">Save Changes</Button>
+                <Button 
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                  onClick={handleSaveProfile}
+                >
+                  Save Changes
+                </Button>
               </CardContent>
             </Card>
 
@@ -68,40 +182,64 @@ const Settings = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
-                    <Select defaultValue="a-positive">
+                    <Select 
+                      value={formData.bloodType} 
+                      onValueChange={(value) => handleInputChange('bloodType', value)}
+                    >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select blood type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="a-positive">A+</SelectItem>
-                        <SelectItem value="a-negative">A-</SelectItem>
-                        <SelectItem value="b-positive">B+</SelectItem>
-                        <SelectItem value="b-negative">B-</SelectItem>
-                        <SelectItem value="ab-positive">AB+</SelectItem>
-                        <SelectItem value="ab-negative">AB-</SelectItem>
-                        <SelectItem value="o-positive">O+</SelectItem>
-                        <SelectItem value="o-negative">O-</SelectItem>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
-                    <Input defaultValue="175" type="number" />
+                    <Input 
+                      value={formData.height}
+                      onChange={(e) => handleInputChange('height', e.target.value)}
+                      type="number" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
-                    <Input defaultValue="75" type="number" />
+                    <Input 
+                      value={formData.weight}
+                      onChange={(e) => handleInputChange('weight', e.target.value)}
+                      type="number" 
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Known Allergies</label>
-                  <Input defaultValue="Penicillin, Pollen" placeholder="List any known allergies" />
+                  <Input 
+                    value={formData.allergies}
+                    onChange={(e) => handleInputChange('allergies', e.target.value)}
+                    placeholder="List any known allergies" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
-                  <Input defaultValue="Jane Doe - +1 (555) 987-6543" placeholder="Name and phone number" />
+                  <Input 
+                    value={formData.emergencyContact}
+                    onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
+                    placeholder="Name and phone number" 
+                  />
                 </div>
-                <Button className="bg-indigo-600 hover:bg-indigo-700">Update Medical Info</Button>
+                <Button 
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                  onClick={handleSaveMedical}
+                >
+                  Update Medical Info
+                </Button>
               </CardContent>
             </Card>
 

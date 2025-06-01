@@ -33,6 +33,21 @@ const Dashboard = () => {
     { label: "Body Temp", value: "36.5 °C", color: "text-orange-600" }
   ];
 
+  const healthResources = [
+    {
+      title: "Managing Blood Pressure",
+      summary: "Learn evidence-based techniques for controlling hypertension through lifestyle modifications, dietary changes, and understanding medication timing for optimal cardiovascular health."
+    },
+    {
+      title: "Preventive Health Screenings",
+      summary: "Discover age-appropriate screenings including mammograms, colonoscopies, and cholesterol tests that help detect conditions early when treatment is most effective."
+    },
+    {
+      title: "Diabetes Management Guide",
+      summary: "Comprehensive approach to managing blood glucose levels through balanced nutrition, regular monitoring, physical activity, and medication adherence for better long-term outcomes."
+    }
+  ];
+
   const recentActivity = [
     { action: `Welcome to Sanjeevni, ${currentUser?.name || 'User'}!`, time: "Just now" },
     { action: "Profile created successfully", time: "Today" },
@@ -153,19 +168,13 @@ const Dashboard = () => {
                   <CardTitle>Health Resources</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium text-sm">Understanding Your Blood Pressure</h4>
-                      <p className="text-xs text-gray-600">Learn about managing hypertension and keeping your heart healthy.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">The Importance of Annual Checkups</h4>
-                      <p className="text-xs text-gray-600">Why regular checkups are crucial for early detection and prevention.</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">Healthy Eating Tips for Diabetics</h4>
-                      <p className="text-xs text-gray-600">Guidance on diet and nutrition to manage blood sugar levels.</p>
-                    </div>
+                  <div className="space-y-4">
+                    {healthResources.map((resource, index) => (
+                      <div key={index}>
+                        <h4 className="font-medium text-sm mb-1">{resource.title}</h4>
+                        <p className="text-xs text-gray-600 leading-relaxed">{resource.summary}</p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

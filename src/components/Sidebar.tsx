@@ -1,5 +1,5 @@
 
-import { Calendar, Book, User, Settings, Bell } from "lucide-react";
+import { Calendar, Book, User, Settings, Bell, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -20,6 +20,7 @@ const Sidebar = () => {
     { icon: Calendar, label: "Appointments", path: "/appointments" },
     { icon: Book, label: "Medical Records", path: "/records" },
     { icon: User, label: "Blood Bank", path: "/blood-bank" },
+    { icon: Users, label: "Queue Management", path: "/queue" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
     { icon: Settings, label: "Settings & Profile", path: "/settings" }
   ];
@@ -34,7 +35,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-white shadow-lg border-r">
+    <div className="w-64 bg-white shadow-lg border-r min-h-screen flex flex-col">
       <div className="p-6">
         <Link to="/" className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -44,7 +45,7 @@ const Sidebar = () => {
         </Link>
       </div>
       
-      <nav className="mt-8">
+      <nav className="mt-8 flex-1">
         {menuItems.map((item, index) => (
           <Link
             key={index}
@@ -60,9 +61,9 @@ const Sidebar = () => {
         ))}
       </nav>
       
-      <div className="absolute bottom-6 left-6 right-6">
+      <div className="p-6 border-t border-gray-200">
         <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-          <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-white font-semibold text-sm">
               {currentUser ? getInitials(currentUser.name) : 'U'}
             </span>

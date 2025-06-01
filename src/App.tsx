@@ -13,6 +13,7 @@ import Emergency from "./pages/Emergency";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
+import Queue from "./pages/Queue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/queue" element={<Queue />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
