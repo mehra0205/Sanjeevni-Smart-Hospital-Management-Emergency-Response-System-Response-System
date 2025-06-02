@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,6 +41,15 @@ const BloodBank = () => {
     { type: "AB+", requester: "Patient S. Reddy", date: "2023-10-18", status: "Fulfilled" },
     { type: "A+", requester: "Patient P. Gupta", date: "2023-10-16", status: "Pending" }
   ];
+
+  // Calculate total blood units
+  const totalUnits = bloodAvailability.reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Count urgent needs (Critical and Low status)
+  const urgentNeeds = bloodAvailability.filter(item => item.status === "Critical" || item.status === "Low").length;
+  
+  // Count pending requests
+  const pendingRequests = recentRequests.filter(request => request.status === "Pending").length;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -146,7 +156,7 @@ const BloodBank = () => {
                     <div className="w-6 h-6 bg-blue-600 rounded-full"></div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">258</p>
+                    <p className="text-2xl font-bold">{totalUnits}</p>
                     <p className="text-sm text-gray-600">Total Units Available</p>
                   </div>
                 </div>
@@ -160,7 +170,7 @@ const BloodBank = () => {
                     <div className="w-6 h-6 bg-red-600 rounded-full"></div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">4</p>
+                    <p className="text-2xl font-bold">{urgentNeeds}</p>
                     <p className="text-sm text-gray-600">Urgent Needs (Critical/Low)</p>
                   </div>
                 </div>
@@ -174,8 +184,8 @@ const BloodBank = () => {
                     <div className="w-6 h-6 bg-green-600 rounded-full"></div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">3</p>
-                    <p className="text-sm text-gray-600">Hospitals Covered</p>
+                    <p className="text-2xl font-bold">{bloodBanks.length}</p>
+                    <p className="text-sm text-gray-600">Blood Banks Covered</p>
                   </div>
                 </div>
               </CardContent>
@@ -188,7 +198,7 @@ const BloodBank = () => {
                     <div className="w-6 h-6 bg-orange-600 rounded-full"></div>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">3</p>
+                    <p className="text-2xl font-bold">{pendingRequests}</p>
                     <p className="text-sm text-gray-600">Recent Requests (Pending)</p>
                   </div>
                 </div>
