@@ -1,9 +1,10 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Phone, MapPin } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -109,18 +110,12 @@ const BloodBank = () => {
     window.scrollTo({ top: element?.offsetTop || 0, behavior: 'smooth' });
   };
 
-  const handleEmergencyCall = () => {
-    window.open('tel:112', '_self');
+  const findDonationCenters = () => {
+    const mapsUrl = "https://www.google.com/maps/search/blood+donation+centers+near+me";
+    window.open(mapsUrl, '_blank');
     toast({
-      title: "Emergency Call",
-      description: "Calling emergency services at 112",
-    });
-  };
-
-  const handleAmbulanceRequest = () => {
-    toast({
-      title: "Ambulance Requested",
-      description: "Nearest ambulance has been notified. ETA: 8-12 minutes",
+      title: "Finding Donation Centers",
+      description: "Opening Google Maps to show blood donation centers",
     });
   };
 
@@ -142,49 +137,6 @@ const BloodBank = () => {
               Request Blood
             </Button>
           </div>
-
-          {/* Emergency Section */}
-          <Card className="mb-8 bg-red-50 border-red-200">
-            <CardHeader>
-              <CardTitle className="text-red-600 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Emergency - 24x7 Ambulance Service
-              </CardTitle>
-              <CardDescription className="text-red-700">
-                Instant emergency response for accidents and critical situations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button 
-                  className="bg-red-600 hover:bg-red-700 text-white h-12"
-                  onClick={handleEmergencyCall}
-                >
-                  <Phone className="h-5 w-5 mr-2" />
-                  Call Emergency (112)
-                </Button>
-                <Button 
-                  className="bg-orange-600 hover:bg-orange-700 text-white h-12"
-                  onClick={handleAmbulanceRequest}
-                >
-                  🚑 Request Ambulance
-                </Button>
-              </div>
-              <div className="mt-4 text-sm text-red-700">
-                <p className="font-semibold">Nearest Hospitals:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>City General Hospital - 2.3 km</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>Emergency Care Center - 4.1 km</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -367,10 +319,10 @@ const BloodBank = () => {
                 </CardContent>
               </Card>
 
-              {/* Updated Donation Card */}
+              {/* Fixed Donation Card */}
               <Card className="mt-6 bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
                 <CardHeader>
-                  <CardTitle className="text-red-700 animate-pulse">💝 Become a Lifesaver: Donate Blood Today</CardTitle>
+                  <CardTitle className="text-red-700">💝 Become a Lifesaver: Donate Blood Today</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -386,7 +338,11 @@ const BloodBank = () => {
                         ))}
                       </div>
                     </div>
-                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                    <Button 
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                      onClick={findDonationCenters}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
                       Find Donation Centers
                     </Button>
                   </div>

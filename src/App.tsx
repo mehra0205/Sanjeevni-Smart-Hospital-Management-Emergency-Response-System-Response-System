@@ -10,6 +10,7 @@ import Appointments from "./pages/Appointments";
 import Records from "./pages/Records";
 import BloodBank from "./pages/BloodBank";
 import Emergency from "./pages/Emergency";
+import EmergencyTab from "./pages/EmergencyTab";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/records" element={<Records />} />
           <Route path="/blood-bank" element={<BloodBank />} />
           <Route path="/emergency" element={<Emergency />} />
+          <Route path="/emergency-tab" element={<EmergencyTab />} />
           <Route path="/login" element={<Login />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/notifications" element={<Notifications />} />

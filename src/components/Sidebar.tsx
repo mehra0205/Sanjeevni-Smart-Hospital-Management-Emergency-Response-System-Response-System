@@ -1,5 +1,4 @@
-
-import { Calendar, Book, User, Settings, Bell, Users } from "lucide-react";
+import { Calendar, Book, User, Settings, Bell, Users, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -22,6 +21,7 @@ const Sidebar = () => {
     { icon: User, label: "Blood Bank", path: "/blood-bank" },
     { icon: Users, label: "Queue Management", path: "/queue" },
     { icon: Bell, label: "Notifications", path: "/notifications" },
+    { icon: AlertTriangle, label: "Emergency", path: "/emergency-tab" },
     { icon: Settings, label: "Settings & Profile", path: "/settings" }
   ];
 
@@ -52,7 +52,8 @@ const Sidebar = () => {
             to={item.path}
             className={cn(
               "flex items-center space-x-3 px-6 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors",
-              location.pathname === item.path && "bg-indigo-50 text-indigo-600 border-r-2 border-indigo-600"
+              location.pathname === item.path && "bg-indigo-50 text-indigo-600 border-r-2 border-indigo-600",
+              item.path === "/emergency-tab" && "text-red-600 hover:bg-red-50 hover:text-red-700"
             )}
           >
             <item.icon className="h-5 w-5" />
