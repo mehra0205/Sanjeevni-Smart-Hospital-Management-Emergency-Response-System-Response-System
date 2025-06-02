@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, MapPin, Bell, Phone } from "lucide-react";
+import { Clock, Users, MapPin, Bell, Phone, AlertTriangle, Droplets } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 const Queue = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [queueData, setQueueData] = useState<any[]>([]);
+  const [bloodRequests, setBloodRequests] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
 
@@ -62,6 +62,10 @@ const Queue = () => {
     });
 
     setQueueData(queueAppointments);
+
+    // Load blood requests
+    const userBloodRequests = JSON.parse(localStorage.getItem('bloodRequests') || '[]');
+    setBloodRequests(userBloodRequests);
 
     // Load notifications
     const userNotifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
@@ -191,6 +195,32 @@ const Queue = () => {
     });
   };
 
+  const handleEmergencyCall = () => {
+    window.open('tel:112', '_self');
+    toast({
+      title: "Emergency Call",
+      description: "Calling emergency services at 112",
+    });
+  };
+
+  const handleAmbulanceRequest = () => {
+    const newNotification = {
+      type: 'emergency',
+      message: 'Ambulance requested - ETA: 8-12 minutes',
+      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now()
+    };
+    
+    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
+    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
+    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+
+    toast({
+      title: "Ambulance Requested",
+      description: "Nearest ambulance has been notified. ETA: 8-12 minutes",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
@@ -199,7 +229,7 @@ const Queue = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Queue Management</h1>
-            <p className="text-gray-600">Track your appointment status and queue position in real-time.</p>
+            <p className="text-gray-600">Track your appointment status, blood requests, and queue position in real-time.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -290,6 +320,45 @@ const Queue = () => {
                 </CardContent>
               </Card>
 
+              {/* Blood Requests Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Droplets className="h-5 w-5 text-red-500" />
+                    Your Blood Requests
+                  </CardTitle>
+                  <CardDescription>Track your blood bank requests and their status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {bloodRequests.length > 0 ? (
+                    <div className="space-y-4">
+                      {bloodRequests.slice(0, 5).map((request) => (
+                        <div key={request.id} className="p-4 border rounded-lg bg-red-50 border-red-200">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h4 className="font-semibold text-red-800">{request.quantity} units of {request.bloodType}</h4>
+                              <p className="text-sm text-red-600">{request.hospital}</p>
+                              <p className="text-xs text-red-500">Requested on {request.date} at {request.time}</p>
+                            </div>
+                            <Badge className={request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}>
+                              {request.status}
+                            </Badge>
+                          </div>
+                          {request.patientDetails && (
+                            <p className="text-xs text-gray-600 mt-2">Patient: {request.patientDetails}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Droplets className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No blood requests found</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Department Queue Statistics */}
               <Card>
                 <CardHeader>
@@ -326,6 +395,47 @@ const Queue = () => {
 
             {/* Quick Actions & Notifications */}
             <div className="space-y-6">
+              {/* Emergency Section */}
+              <Card className="bg-red-50 border-red-200">
+                <CardHeader>
+                  <CardTitle className="text-red-600 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Emergency
+                  </CardTitle>
+                  <CardDescription className="text-red-700">
+                    24x7 Instant Ambulance Service
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    onClick={handleEmergencyCall}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Call Emergency (112)
+                  </Button>
+                  <Button 
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                    onClick={handleAmbulanceRequest}
+                  >
+                    🚑 Request Ambulance
+                  </Button>
+                  <div className="text-xs text-red-600 bg-white p-2 rounded border border-red-200">
+                    <p className="font-semibold mb-1">Nearest Hospitals:</p>
+                    <div className="space-y-1">
+                      <div className="flex justify-between">
+                        <span>City General</span>
+                        <span>2.3 km</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Emergency Care</span>
+                        <span>4.1 km</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -352,26 +462,43 @@ const Queue = () => {
                       <div key={index} className={`p-3 rounded-lg border ${
                         notification.type === 'queue' ? 'bg-blue-50 border-blue-200' :
                         notification.type === 'appointment' ? 'bg-green-50 border-green-200' :
+                        notification.type === 'blood' ? 'bg-red-50 border-red-200' :
+                        notification.type === 'emergency' ? 'bg-orange-50 border-orange-200' :
                         'bg-yellow-50 border-yellow-200'
                       }`}>
                         <p className={`text-sm font-medium ${
                           notification.type === 'queue' ? 'text-blue-800' :
                           notification.type === 'appointment' ? 'text-green-800' :
+                          notification.type === 'blood' ? 'text-red-800' :
+                          notification.type === 'emergency' ? 'text-orange-800' :
                           'text-yellow-800'
                         }`}>
                           {notification.type === 'queue' ? 'Queue Update' :
-                           notification.type === 'appointment' ? 'Appointment' : 'System'}
+                           notification.type === 'appointment' ? 'Appointment' :
+                           notification.type === 'blood' ? 'Blood Request' :
+                           notification.type === 'emergency' ? 'Emergency' : 'System'}
                         </p>
                         <p className={`text-xs ${
                           notification.type === 'queue' ? 'text-blue-600' :
                           notification.type === 'appointment' ? 'text-green-600' :
+                          notification.type === 'blood' ? 'text-red-600' :
+                          notification.type === 'emergency' ? 'text-orange-600' :
                           'text-yellow-600'
                         }`}>
                           {notification.message}
                         </p>
+                        {notification.details && (
+                          <p className={`text-xs mt-1 ${
+                            notification.type === 'blood' ? 'text-red-500' : 'text-gray-500'
+                          }`}>
+                            {notification.details}
+                          </p>
+                        )}
                         <p className={`text-xs mt-1 ${
                           notification.type === 'queue' ? 'text-blue-500' :
                           notification.type === 'appointment' ? 'text-green-500' :
+                          notification.type === 'blood' ? 'text-red-500' :
+                          notification.type === 'emergency' ? 'text-orange-500' :
                           'text-yellow-500'
                         }`}>
                           {notification.time}

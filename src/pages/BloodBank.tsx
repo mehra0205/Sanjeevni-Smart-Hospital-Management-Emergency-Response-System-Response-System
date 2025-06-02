@@ -4,16 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Phone, MapPin } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const BloodBank = () => {
+  const [bloodType, setBloodType] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [hospital, setHospital] = useState("");
+  const [patientDetails, setPatientDetails] = useState("");
+  const { toast } = useToast();
+
+  const bloodBanks = [
+    { name: "Red Cross Blood Bank Noida", location: "Sector 62, Noida", distance: "2.1 km", contact: "+91-120-4567890" },
+    { name: "Apollo Blood Bank Delhi", location: "Sarita Vihar, Delhi", distance: "15.2 km", contact: "+91-11-2634567" },
+    { name: "Fortis Blood Bank Gurgaon", location: "Sector 44, Gurgaon", distance: "25.3 km", contact: "+91-124-4567890" },
+    { name: "Max Healthcare Blood Bank", location: "Patparganj, Delhi", distance: "18.7 km", contact: "+91-11-4567890" },
+    { name: "Medanta Blood Bank", location: "Sector 38, Gurgaon", distance: "28.4 km", contact: "+91-124-4141414" },
+    { name: "BLK Blood Bank Delhi", location: "Pusa Road, Delhi", distance: "22.1 km", contact: "+91-11-30403040" }
+  ];
+
   const bloodAvailability = [
-    { type: "A+", hospital: "City General Hospital", quantity: 45, status: "High" },
-    { type: "O-", hospital: "District Emergency Center", quantity: 8, status: "Low" },
-    { type: "B+", hospital: "City General Hospital", quantity: 22, status: "Medium" },
-    { type: "AB+", hospital: "Central Blood Bank", quantity: 15, status: "Medium" },
-    { type: "A-", hospital: "District Emergency Center", quantity: 3, status: "Critical" },
-    { type: "O+", hospital: "Central Blood Bank", quantity: 60, status: "High" }
+    { type: "A+", hospital: "Red Cross Blood Bank Noida", quantity: 45, status: "High" },
+    { type: "O-", hospital: "Apollo Blood Bank Delhi", quantity: 8, status: "Low" },
+    { type: "B+", hospital: "Fortis Blood Bank Gurgaon", quantity: 22, status: "Medium" },
+    { type: "AB+", hospital: "Max Healthcare Blood Bank", quantity: 15, status: "Medium" },
+    { type: "A-", hospital: "Medanta Blood Bank", quantity: 3, status: "Critical" },
+    { type: "O+", hospital: "BLK Blood Bank Delhi", quantity: 60, status: "High" }
   ];
 
   const recentRequests = [
@@ -36,6 +54,76 @@ const BloodBank = () => {
     }
   };
 
+  const handleSubmitRequest = () => {
+    if (!bloodType || !quantity) {
+      toast({
+        title: "Missing Information",
+        description: "Please select blood type and quantity.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Store the request in localStorage
+    const newRequest = {
+      id: Date.now().toString(),
+      bloodType,
+      quantity: parseInt(quantity),
+      hospital: hospital || "Any Available",
+      patientDetails: patientDetails || "Not specified",
+      status: "Pending",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString()
+    };
+
+    const existingRequests = JSON.parse(localStorage.getItem('bloodRequests') || '[]');
+    existingRequests.unshift(newRequest);
+    localStorage.setItem('bloodRequests', JSON.stringify(existingRequests));
+
+    // Add notification
+    const notification = {
+      type: 'blood',
+      message: `Blood request submitted: ${quantity} units of ${bloodType}`,
+      time: new Date().toLocaleTimeString(),
+      timestamp: Date.now(),
+      details: `Hospital: ${hospital || 'Any Available'}, Patient: ${patientDetails || 'Not specified'}`
+    };
+
+    const existingNotifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+    existingNotifications.unshift(notification);
+    localStorage.setItem('userNotifications', JSON.stringify(existingNotifications.slice(0, 10)));
+
+    toast({
+      title: "Blood Request Submitted",
+      description: `Request for ${quantity} units of ${bloodType} has been submitted successfully.`,
+    });
+
+    // Clear form
+    setBloodType("");
+    setQuantity("");
+    setHospital("");
+    setPatientDetails("");
+  };
+
+  const handleRequestBlood = () => {
+    window.scrollTo({ top: document.querySelector('.request-section')?.offsetTop || 0, behavior: 'smooth' });
+  };
+
+  const handleEmergencyCall = () => {
+    window.open('tel:112', '_self');
+    toast({
+      title: "Emergency Call",
+      description: "Calling emergency services at 112",
+    });
+  };
+
+  const handleAmbulanceRequest = () => {
+    toast({
+      title: "Ambulance Requested",
+      description: "Nearest ambulance has been notified. ETA: 8-12 minutes",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
@@ -47,10 +135,56 @@ const BloodBank = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Blood Bank Management</h1>
               <p className="text-gray-600">Check blood availability and manage requests across our network.</p>
             </div>
-            <Button className="bg-indigo-600 hover:bg-indigo-700">
+            <Button 
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={handleRequestBlood}
+            >
               Request Blood
             </Button>
           </div>
+
+          {/* Emergency Section */}
+          <Card className="mb-8 bg-red-50 border-red-200">
+            <CardHeader>
+              <CardTitle className="text-red-600 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Emergency - 24x7 Ambulance Service
+              </CardTitle>
+              <CardDescription className="text-red-700">
+                Instant emergency response for accidents and critical situations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button 
+                  className="bg-red-600 hover:bg-red-700 text-white h-12"
+                  onClick={handleEmergencyCall}
+                >
+                  <Phone className="h-5 w-5 mr-2" />
+                  Call Emergency (112)
+                </Button>
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700 text-white h-12"
+                  onClick={handleAmbulanceRequest}
+                >
+                  🚑 Request Ambulance
+                </Button>
+              </div>
+              <div className="mt-4 text-sm text-red-700">
+                <p className="font-semibold">Nearest Hospitals:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>City General Hospital - 2.3 km</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>Emergency Care Center - 4.1 km</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -116,7 +250,7 @@ const BloodBank = () => {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Detailed Availability by Hospital & Type</CardTitle>
+                  <CardTitle>Blood Availability - Delhi NCR Region</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -164,61 +298,98 @@ const BloodBank = () => {
 
             {/* Request Form */}
             <div>
-              <Card className="sticky top-8">
+              <Card className="sticky top-8 request-section">
                 <CardHeader>
                   <CardTitle>Request Blood Unit</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Blood Type Needed</label>
-                    <Select>
+                    <Select value={bloodType} onValueChange={setBloodType}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select blood type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="a-positive">A+</SelectItem>
-                        <SelectItem value="a-negative">A-</SelectItem>
-                        <SelectItem value="b-positive">B+</SelectItem>
-                        <SelectItem value="b-negative">B-</SelectItem>
-                        <SelectItem value="ab-positive">AB+</SelectItem>
-                        <SelectItem value="ab-negative">AB-</SelectItem>
-                        <SelectItem value="o-positive">O+</SelectItem>
-                        <SelectItem value="o-negative">O-</SelectItem>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Quantity (Units)</label>
-                    <Input type="number" placeholder="1" min="1" />
+                    <Input 
+                      type="number" 
+                      placeholder="1" 
+                      min="1" 
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Hospital/Location</label>
-                    <Input placeholder="e.g., City General Hospital" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Hospital/Blood Bank</label>
+                    <Select value={hospital} onValueChange={setHospital}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select hospital or blood bank" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bloodBanks.map((bank, index) => (
+                          <SelectItem key={index} value={bank.name}>
+                            {bank.name} - {bank.distance}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Patient Details (Optional)</label>
-                    <Input placeholder="e.g., Patient Name, Ward Number" />
+                    <Input 
+                      placeholder="e.g., Patient Name, Ward Number" 
+                      value={patientDetails}
+                      onChange={(e) => setPatientDetails(e.target.value)}
+                    />
                   </div>
 
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                  <Button 
+                    className="w-full bg-indigo-600 hover:bg-indigo-700"
+                    onClick={handleSubmitRequest}
+                  >
                     Submit Request
                   </Button>
                 </CardContent>
               </Card>
 
-              {/* Donation Card */}
-              <Card className="mt-6">
+              {/* Updated Donation Card */}
+              <Card className="mt-6 bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
                 <CardHeader>
-                  <CardTitle>Become a Lifesaver: Donate Blood Today</CardTitle>
+                  <CardTitle className="text-red-700 animate-pulse">💝 Become a Lifesaver: Donate Blood Today</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">Your single donation can save up to three lives. Find out how you can donate blood at a center near you or during an upcoming blood drive.</p>
-                  <Button className="w-full" variant="outline">
-                    Find Donation Centers
-                  </Button>
+                  <div className="space-y-3">
+                    <p className="text-sm text-red-600 font-medium">Your single donation can save up to three lives!</p>
+                    <div className="bg-white p-3 rounded-lg border border-red-200">
+                      <p className="text-xs text-gray-600 mb-2">Donation Centers Near You:</p>
+                      <div className="space-y-1">
+                        {bloodBanks.slice(0, 3).map((bank, index) => (
+                          <div key={index} className="text-xs text-gray-700 flex justify-between">
+                            <span>{bank.name}</span>
+                            <span className="text-green-600">{bank.distance}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                      Find Donation Centers
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
