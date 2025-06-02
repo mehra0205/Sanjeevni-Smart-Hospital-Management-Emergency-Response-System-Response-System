@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -106,7 +105,8 @@ const BloodBank = () => {
   };
 
   const handleRequestBlood = () => {
-    window.scrollTo({ top: document.querySelector('.request-section')?.offsetTop || 0, behavior: 'smooth' });
+    const element = document.querySelector('.request-section') as HTMLElement;
+    window.scrollTo({ top: element?.offsetTop || 0, behavior: 'smooth' });
   };
 
   const handleEmergencyCall = () => {
