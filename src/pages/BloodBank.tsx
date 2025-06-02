@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -250,7 +249,7 @@ const BloodBank = () => {
 
             {/* Request Form */}
             <div>
-              <Card className="sticky top-8 request-section">
+              <Card className="request-section">
                 <CardHeader>
                   <CardTitle>Request Blood Unit</CardTitle>
                 </CardHeader>
