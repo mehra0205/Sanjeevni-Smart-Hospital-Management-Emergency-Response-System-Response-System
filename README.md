@@ -1,73 +1,63 @@
-# Welcome to your Lovable project
+**Sanjeevni-Smart-Hospital-Management-Emergency-Response-System**
 
-## Project info
+**🚀 Overview:**
 
-**URL**: https://lovable.dev/projects/e1963f63-9c2f-4c31-a72d-372744253490
+**Sanjeevni** is a comprehensive web application built to improve hospital efficiency, patient care, and emergency response. It combines patient-centered services, hospital resource tracking, and life-saving tools into a single, user-friendly platform.
 
-## How can I edit this code?
+**🎯 Key Features:**
 
-There are several ways of editing your application.
+**🧍 1. Patient Self Check-In Portal**
 
-**Use Lovable**
+Patients can register themselves digitally before arriving at the hospital to reduce queue time and paperwork.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e1963f63-9c2f-4c31-a72d-372744253490) and start prompting.
+**🩺 2. Doctor Availability & Appointment Booking**
 
-Changes made via Lovable will be committed automatically to this repo.
+Check doctor availability in real-time and book appointments through the web or mobile interface.
 
-**Use your preferred IDE**
+**🩸 3. Blood Bank Management & Request System**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Track blood stock levels, allow users to request blood units, and notify registered donors.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**📁 4. Medical Record Access & History**
 
-Follow these steps:
+Secure digital access to patients' past medical history, prescriptions, test reports, and visit logs.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+**🏥 5. Hospital Resource Management System**
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Real-time dashboard for administrators to track ICU beds, ventilators, and other critical equipment.
 
-# Step 3: Install the necessary dependencies.
-npm i
+**📲 6. Mobile-Friendly Hospital Queue Status**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Patients can view real-time queue status and get notified when it's their turn—minimizing crowding.
 
-**Edit a file directly in GitHub**
+**🚑 7. 24x7 Ambulance Support System**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Request ambulances from the nearest available provider with live tracking and estimated arrival times.
 
-**Use GitHub Codespaces**
+**📍 8. Emergency Mode: Nearest Hospital Finder**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Use GPS to detect emergencies and show a map/list of nearby hospitals with options to call, navigate, or request help.
 
-## What technologies are used for this project?
+**🛑 Problem Statement – Sanjeevni**
 
-This project is built with:
+In India and many parts of the world, **hospital systems are overwhelmed, outdated, and disconnected**. Patients face long queues, limited access to real-time doctor availability, and confusion during emergencies. Additionally, blood bank shortages, mismanaged medical records, and delayed ambulance responses can lead to preventable fatalities.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+There is **no single unified platform** that:
 
-## How can I deploy this project?
+- Enables **quick and remote patient check-ins**
+- Offers **real-time access to hospital resources and staff availability**
+- **Streamlines emergency care** like ambulance requests and nearest hospital detection
+- **Digitalizes medical records**, queue management, and blood bank access
 
-Simply open [Lovable](https://lovable.dev/projects/e1963f63-9c2f-4c31-a72d-372744253490) and click on Share -> Publish.
+**🧩 The Core Challenges:**
 
-## Can I connect a custom domain to my Lovable project?
+1. ⌛ **Time-consuming registration and appointment delays**
+2. ❌ **Lack of real-time doctor/resource visibility**
+3. 📉 **Inefficient management of blood and medical resources**
+4. 🆘 **Uncoordinated emergency response and ambulance availability**
+5. 📂 **Poor accessibility to personal medical records for patients**
 
-Yes, you can!
+**✅ Goal:**
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+To develop **Sanjeevni**—a smart, mobile-friendly **hospital management and emergency support web app** that bridges the gap between patients, hospitals, and emergency services through real-time data, intuitive interfaces, and location-aware features.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
