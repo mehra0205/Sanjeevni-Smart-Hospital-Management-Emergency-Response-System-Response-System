@@ -1,224 +1,113 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, MapPin, Bell, Phone, AlertTriangle, Droplets } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock, Users, MapPin, Phone, Star, Calendar, AlertCircle } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 const Queue = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [queueData, setQueueData] = useState<any[]>([]);
-  const [bloodRequests, setBloodRequests] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const user = localStorage.getItem('currentUser');
-    if (user) {
-      setCurrentUser(JSON.parse(user));
+  const queueData = [
+    {
+      id: 1,
+      doctorName: "Dr. Sarah Smith",
+      specialty: "Cardiologist",
+      currentQueue: 8,
+      totalAppointments: 15,
+      avgWaitTime: "25 min",
+      nextAvailable: "2:30 PM",
+      patients: [
+        { name: "John Doe", appointmentTime: "2:00 PM", status: "waiting", estimatedWait: "15 min" },
+        { name: "Jane Smith", appointmentTime: "2:15 PM", status: "in-progress", estimatedWait: "0 min" },
+        { name: "Mike Johnson", appointmentTime: "2:30 PM", status: "scheduled", estimatedWait: "30 min" },
+        { name: "Sarah Wilson", appointmentTime: "2:45 PM", status: "scheduled", estimatedWait: "45 min" },
+        { name: "David Brown", appointmentTime: "3:00 PM", status: "scheduled", estimatedWait: "60 min" }
+      ],
+      rating: 4.8,
+      location: "Room 204, Cardiology Wing",
+      phone: "+1 (555) 123-4567"
+    },
+    {
+      id: 2,
+      doctorName: "Dr. Michael Johnson",
+      specialty: "Endocrinologist",
+      currentQueue: 5,
+      totalAppointments: 12,
+      avgWaitTime: "18 min",
+      nextAvailable: "3:15 PM",
+      patients: [
+        { name: "Emily Davis", appointmentTime: "3:00 PM", status: "in-progress", estimatedWait: "0 min" },
+        { name: "Robert Taylor", appointmentTime: "3:15 PM", status: "scheduled", estimatedWait: "15 min" },
+        { name: "Lisa Garcia", appointmentTime: "3:30 PM", status: "scheduled", estimatedWait: "30 min" },
+        { name: "Tom Anderson", appointmentTime: "3:45 PM", status: "scheduled", estimatedWait: "45 min" }
+      ],
+      rating: 4.6,
+      location: "Room 102, Endocrinology Department",
+      phone: "+1 (555) 234-5678"
+    },
+    {
+      id: 3,
+      doctorName: "Dr. Emily Brown",
+      specialty: "General Practitioner",
+      currentQueue: 12,
+      totalAppointments: 20,
+      avgWaitTime: "35 min",
+      nextAvailable: "4:00 PM",
+      patients: [
+        { name: "Alex Thompson", appointmentTime: "3:30 PM", status: "waiting", estimatedWait: "10 min" },
+        { name: "Maria Rodriguez", appointmentTime: "3:45 PM", status: "in-progress", estimatedWait: "0 min" },
+        { name: "James Wilson", appointmentTime: "4:00 PM", status: "scheduled", estimatedWait: "25 min" },
+        { name: "Anna Lee", appointmentTime: "4:15 PM", status: "scheduled", estimatedWait: "40 min" },
+        { name: "Peter Kim", appointmentTime: "4:30 PM", status: "scheduled", estimatedWait: "55 min" },
+        { name: "Grace Chen", appointmentTime: "4:45 PM", status: "scheduled", estimatedWait: "70 min" }
+      ],
+      rating: 4.9,
+      location: "Room 301, General Medicine",
+      phone: "+1 (555) 345-6789"
+    },
+    {
+      id: 4,
+      doctorName: "Dr. David Wilson",
+      specialty: "Orthopedic Surgeon",
+      currentQueue: 3,
+      totalAppointments: 8,
+      avgWaitTime: "20 min",
+      nextAvailable: "2:45 PM",
+      patients: [
+        { name: "Kevin Martinez", appointmentTime: "2:30 PM", status: "in-progress", estimatedWait: "0 min" },
+        { name: "Helen Clark", appointmentTime: "2:45 PM", status: "scheduled", estimatedWait: "15 min" },
+        { name: "Ryan Walker", appointmentTime: "3:00 PM", status: "scheduled", estimatedWait: "30 min" }
+      ],
+      rating: 4.7,
+      location: "Room 405, Orthopedic Department",
+      phone: "+1 (555) 456-7890"
     }
-
-    // Load user's appointments for queue
-    const userAppointments = JSON.parse(localStorage.getItem('userAppointments') || '[]');
-    const today = new Date().toDateString();
-    
-    // Filter appointments for today and create queue data
-    const todayAppointments = userAppointments.filter((apt: any) => 
-      new Date(apt.date).toDateString() === today
-    );
-
-    // Transform appointments to queue format with realistic queue positions
-    const queueAppointments = todayAppointments.map((apt: any, index: number) => {
-      const currentTime = new Date();
-      const appointmentTime = new Date(`${apt.date} ${apt.time}`);
-      const timeDiff = appointmentTime.getTime() - currentTime.getTime();
-      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
-      
-      let status = 'waiting';
-      let position = Math.floor(Math.random() * 5) + 1; // Random position 1-5
-      let estimatedWait = `${Math.max(5, position * 8)} minutes`;
-      
-      if (minutesDiff <= 15 && minutesDiff > 0) {
-        status = 'next';
-        position = 1;
-        estimatedWait = '5 minutes';
-      } else if (minutesDiff < 0) {
-        status = 'delayed';
-        estimatedWait = '10 minutes';
-      }
-
-      return {
-        id: apt.id,
-        department: apt.department,
-        doctor: `Dr. ${apt.doctorName}`,
-        appointmentTime: apt.time,
-        currentPosition: position,
-        estimatedWait: estimatedWait,
-        status: status,
-        location: `Room ${200 + index + 1}, ${Math.floor(Math.random() * 3) + 1}${index > 0 ? 'st' : 'nd'} Floor`,
-        specialty: apt.specialty || 'General Consultation'
-      };
-    });
-
-    setQueueData(queueAppointments);
-
-    // Load blood requests
-    const userBloodRequests = JSON.parse(localStorage.getItem('bloodRequests') || '[]');
-    setBloodRequests(userBloodRequests);
-
-    // Load notifications
-    const userNotifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
-    setNotifications(userNotifications);
-
-    // Simulate queue updates every 30 seconds
-    const interval = setInterval(() => {
-      setQueueData(prevQueue => 
-        prevQueue.map(apt => {
-          if (apt.status === 'waiting' && apt.currentPosition > 1) {
-            const newPosition = Math.max(1, apt.currentPosition - 1);
-            const newWait = `${Math.max(5, newPosition * 8)} minutes`;
-            
-            // Add notification for position update
-            if (newPosition !== apt.currentPosition) {
-              const newNotification = {
-                type: 'queue',
-                message: `Your position for ${apt.doctor} has moved to #${newPosition}`,
-                time: new Date().toLocaleTimeString(),
-                timestamp: Date.now()
-              };
-              
-              setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-              
-              // Update localStorage
-              const updatedNotifications = [newNotification, ...userNotifications].slice(0, 10);
-              localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
-            }
-            
-            return {
-              ...apt,
-              currentPosition: newPosition,
-              estimatedWait: newWait,
-              status: newPosition === 1 ? 'next' : 'waiting'
-            };
-          }
-          return apt;
-        })
-      );
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'next': return 'bg-green-100 text-green-800';
-      case 'waiting': return 'bg-yellow-100 text-yellow-800';
-      case 'delayed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'in-progress': return 'bg-green-500';
+      case 'waiting': return 'bg-yellow-500';
+      case 'scheduled': return 'bg-blue-500';
+      default: return 'bg-gray-500';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'next': return 'Next in Line';
+      case 'in-progress': return 'In Progress';
       case 'waiting': return 'Waiting';
-      case 'delayed': return 'Delayed';
+      case 'scheduled': return 'Scheduled';
       default: return 'Unknown';
     }
   };
 
-  const handleCheckIn = (appointmentId: string) => {
-    toast({
-      title: "Checked In Successfully",
-      description: "You have been checked in for your appointment.",
-    });
-    
-    const newNotification = {
-      type: 'appointment',
-      message: 'Successfully checked in for your appointment',
-      time: new Date().toLocaleTimeString(),
-      timestamp: Date.now()
-    };
-    
-    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
-    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
-  };
-
-  const handleRequestWaitUpdate = (appointmentId: string) => {
-    const appointment = queueData.find(apt => apt.id === appointmentId);
-    if (appointment) {
-      toast({
-        title: "Wait Time Update Requested",
-        description: `Current estimated wait: ${appointment.estimatedWait}`,
-      });
-      
-      const newNotification = {
-        type: 'queue',
-        message: `Wait time update: ${appointment.estimatedWait} for ${appointment.doctor}`,
-        time: new Date().toLocaleTimeString(),
-        timestamp: Date.now()
-      };
-      
-      setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-      const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
-      localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
-    }
-  };
-
-  const handleReschedule = (appointmentId: string) => {
-    toast({
-      title: "Reschedule Request Sent",
-      description: "Reception will contact you shortly to reschedule your appointment.",
-    });
-    
-    const newNotification = {
-      type: 'appointment',
-      message: 'Reschedule request submitted. Reception will contact you soon.',
-      time: new Date().toLocaleTimeString(),
-      timestamp: Date.now()
-    };
-    
-    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
-    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
-  };
-
-  const handleContactReception = () => {
-    const phoneNumber = "tel:12345678910";
-    window.open(phoneNumber, '_self');
-    
-    toast({
-      title: "Calling Reception",
-      description: "Connecting you to reception at 12345678910",
-    });
-  };
-
-  const handleEmergencyCall = () => {
-    window.open('tel:112', '_self');
-    toast({
-      title: "Emergency Call",
-      description: "Calling emergency services at 112",
-    });
-  };
-
-  const handleAmbulanceRequest = () => {
-    const newNotification = {
-      type: 'emergency',
-      message: 'Ambulance requested - ETA: 8-12 minutes',
-      time: new Date().toLocaleTimeString(),
-      timestamp: Date.now()
-    };
-    
-    setNotifications(prev => [newNotification, ...prev].slice(0, 10));
-    const updatedNotifications = [newNotification, ...notifications].slice(0, 10);
-    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
-
-    toast({
-      title: "Ambulance Requested",
-      description: "Nearest ambulance has been notified. ETA: 8-12 minutes",
-    });
+  const getQueueStatus = (current: number, total: number) => {
+    const percentage = (current / total) * 100;
+    if (percentage < 50) return { text: 'Light', color: 'text-green-600' };
+    if (percentage < 80) return { text: 'Moderate', color: 'text-yellow-600' };
+    return { text: 'Heavy', color: 'text-red-600' };
   };
 
   return (
@@ -226,309 +115,194 @@ const Queue = () => {
       <Sidebar />
       
       <div className="flex-1 p-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Queue Management</h1>
-            <p className="text-gray-600">Track your appointment status, blood requests, and queue position in real-time.</p>
+            <p className="text-gray-600">Real-time view of doctor appointments and patient queues</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Current Queue Status */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Appointments Today</CardTitle>
-                  <CardDescription>Real-time queue status for your scheduled appointments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {queueData.length > 0 ? (
-                    <div className="space-y-6">
-                      {queueData.map((appointment) => (
-                        <div key={appointment.id} className="p-6 border rounded-lg bg-white shadow-sm">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="font-semibold text-lg">{appointment.doctor}</h3>
-                              <p className="text-gray-600">{appointment.department}</p>
-                              <p className="text-sm text-gray-500">{appointment.specialty}</p>
-                              <p className="text-sm text-gray-500 flex items-center mt-2">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                {appointment.location}
-                              </p>
-                            </div>
-                            <Badge className={getStatusColor(appointment.status)}>
-                              {getStatusText(appointment.status)}
-                            </Badge>
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-4 text-center mb-4">
-                            <div className="p-3 bg-blue-50 rounded-lg">
-                              <Clock className="h-5 w-5 mx-auto mb-1 text-blue-600" />
-                              <p className="text-sm font-medium">Appointment</p>
-                              <p className="text-lg font-bold text-blue-600">{appointment.appointmentTime}</p>
-                            </div>
-                            <div className="p-3 bg-orange-50 rounded-lg">
-                              <Users className="h-5 w-5 mx-auto mb-1 text-orange-600" />
-                              <p className="text-sm font-medium">Position</p>
-                              <p className="text-lg font-bold text-orange-600">#{appointment.currentPosition}</p>
-                            </div>
-                            <div className="p-3 bg-green-50 rounded-lg">
-                              <Bell className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                              <p className="text-sm font-medium">Est. Wait</p>
-                              <p className="text-lg font-bold text-green-600">{appointment.estimatedWait}</p>
-                            </div>
-                          </div>
-                          
-                          {appointment.status === 'next' && (
-                            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                              <p className="text-green-800 font-medium">🔔 You're next! Please be ready.</p>
-                            </div>
-                          )}
-                          
-                          <div className="flex gap-2 flex-wrap">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleCheckIn(appointment.id)}
-                              className="bg-indigo-600 hover:bg-indigo-700"
-                            >
-                              Check In
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => handleRequestWaitUpdate(appointment.id)}
-                            >
-                              Request Wait Update
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => handleReschedule(appointment.id)}
-                            >
-                              Reschedule
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 text-gray-500">
-                      <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>No appointments in queue today</p>
-                      <p className="text-sm">Your future appointments will appear here</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Blood Requests Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Droplets className="h-5 w-5 text-red-500" />
-                    Your Blood Requests
-                  </CardTitle>
-                  <CardDescription>Track your blood bank requests and their status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {bloodRequests.length > 0 ? (
-                    <div className="space-y-4">
-                      {bloodRequests.slice(0, 5).map((request) => (
-                        <div key={request.id} className="p-4 border rounded-lg bg-red-50 border-red-200">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h4 className="font-semibold text-red-800">{request.quantity} units of {request.bloodType}</h4>
-                              <p className="text-sm text-red-600">{request.hospital}</p>
-                              <p className="text-xs text-red-500">Requested on {request.date} at {request.time}</p>
-                            </div>
-                            <Badge className={request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}>
-                              {request.status}
-                            </Badge>
-                          </div>
-                          {request.patientDetails && (
-                            <p className="text-xs text-gray-600 mt-2">Patient: {request.patientDetails}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Droplets className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p className="text-sm">No blood requests found</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Department Queue Statistics */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Department Queue Status</CardTitle>
-                  <CardDescription>Current wait times across different departments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { dept: "Cardiology", wait: "15-20 min", patients: 8, status: "normal" },
-                      { dept: "General Medicine", wait: "5-10 min", patients: 3, status: "fast" },
-                      { dept: "Orthopedics", wait: "30-35 min", patients: 12, status: "busy" },
-                      { dept: "Dermatology", wait: "10-15 min", patients: 5, status: "normal" }
-                    ].map((dept, index) => (
-                      <div key={index} className="p-3 border rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="font-medium">{dept.dept}</h4>
-                          <Badge variant="outline" className={
-                            dept.status === 'fast' ? 'text-green-600 border-green-600' :
-                            dept.status === 'busy' ? 'text-red-600 border-red-600' : 
-                            'text-yellow-600 border-yellow-600'
-                          }>
-                            {dept.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600">{dept.patients} patients waiting</p>
-                        <p className="text-lg font-semibold">{dept.wait}</p>
-                      </div>
-                    ))}
+          {/* Overview Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Doctors</p>
+                    <p className="text-2xl font-bold text-gray-900">{queueData.length}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Quick Actions & Notifications */}
-            <div className="space-y-6">
-              {/* Emergency Section */}
-              <Card className="bg-red-50 border-red-200">
-                <CardHeader>
-                  <CardTitle className="text-red-600 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5" />
-                    Emergency
-                  </CardTitle>
-                  <CardDescription className="text-red-700">
-                    24x7 Instant Ambulance Service
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    onClick={handleEmergencyCall}
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Emergency (112)
-                  </Button>
-                  <Button 
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                    onClick={handleAmbulanceRequest}
-                  >
-                    🚑 Request Ambulance
-                  </Button>
-                  <div className="text-xs text-red-600 bg-white p-2 rounded border border-red-200">
-                    <p className="font-semibold mb-1">Nearest Hospitals:</p>
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <span>City General</span>
-                        <span>2.3 km</span>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Patients in Queue</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {queueData.reduce((sum, doctor) => sum + doctor.currentQueue, 0)}
+                    </p>
+                  </div>
+                  <Clock className="h-8 w-8 text-yellow-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Avg Wait Time</p>
+                    <p className="text-2xl font-bold text-gray-900">24 min</p>
+                  </div>
+                  <AlertCircle className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Appointments</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {queueData.reduce((sum, doctor) => sum + doctor.totalAppointments, 0)}
+                    </p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Doctor Queue Cards */}
+          <div className="space-y-6">
+            {queueData.map((doctor) => {
+              const queueStatus = getQueueStatus(doctor.currentQueue, doctor.totalAppointments);
+              const completionPercentage = ((doctor.totalAppointments - doctor.currentQueue) / doctor.totalAppointments) * 100;
+              
+              return (
+                <Card key={doctor.id} className="overflow-hidden">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={`/placeholder-doctor-${doctor.id}.jpg`} />
+                          <AvatarFallback className="bg-blue-100 text-blue-600 text-lg font-semibold">
+                            {doctor.doctorName.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-xl">{doctor.doctorName}</CardTitle>
+                          <CardDescription className="text-base">{doctor.specialty}</CardDescription>
+                          <div className="flex items-center mt-2 space-x-4">
+                            <div className="flex items-center">
+                              <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                              <span className="text-sm font-medium">{doctor.rating}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {doctor.location}
+                            </div>
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Phone className="h-4 w-4 mr-1" />
+                              {doctor.phone}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Emergency Care</span>
-                        <span>4.1 km</span>
+                      <div className="text-right">
+                        <Badge variant="outline" className={queueStatus.color}>
+                          {queueStatus.text} Queue
+                        </Badge>
+                        <p className="text-sm text-gray-600 mt-2">Next available: {doctor.nextAvailable}</p>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardHeader>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center gap-2"
-                    onClick={handleContactReception}
-                  >
-                    <Phone className="h-4 w-4" />
-                    Contact Reception
-                  </Button>
-                  <p className="text-xs text-gray-500 text-center">Call: 12345678910</p>
-                </CardContent>
-              </Card>
+                  <CardContent>
+                    {/* Queue Statistics */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-gray-600">Patients in Queue</p>
+                        <p className="text-2xl font-bold text-blue-600">{doctor.currentQueue}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-gray-600">Total Appointments</p>
+                        <p className="text-2xl font-bold text-green-600">{doctor.totalAppointments}</p>
+                      </div>
+                      <div className="bg-yellow-50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-gray-600">Avg Wait Time</p>
+                        <p className="text-2xl font-bold text-yellow-600">{doctor.avgWaitTime}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-gray-600">Completion</p>
+                        <p className="text-2xl font-bold text-purple-600">{Math.round(completionPercentage)}%</p>
+                      </div>
+                    </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Notifications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {notifications.slice(0, 8).map((notification, index) => (
-                      <div key={index} className={`p-3 rounded-lg border ${
-                        notification.type === 'queue' ? 'bg-blue-50 border-blue-200' :
-                        notification.type === 'appointment' ? 'bg-green-50 border-green-200' :
-                        notification.type === 'blood' ? 'bg-red-50 border-red-200' :
-                        notification.type === 'emergency' ? 'bg-orange-50 border-orange-200' :
-                        'bg-yellow-50 border-yellow-200'
-                      }`}>
-                        <p className={`text-sm font-medium ${
-                          notification.type === 'queue' ? 'text-blue-800' :
-                          notification.type === 'appointment' ? 'text-green-800' :
-                          notification.type === 'blood' ? 'text-red-800' :
-                          notification.type === 'emergency' ? 'text-orange-800' :
-                          'text-yellow-800'
-                        }`}>
-                          {notification.type === 'queue' ? 'Queue Update' :
-                           notification.type === 'appointment' ? 'Appointment' :
-                           notification.type === 'blood' ? 'Blood Request' :
-                           notification.type === 'emergency' ? 'Emergency' : 'System'}
-                        </p>
-                        <p className={`text-xs ${
-                          notification.type === 'queue' ? 'text-blue-600' :
-                          notification.type === 'appointment' ? 'text-green-600' :
-                          notification.type === 'blood' ? 'text-red-600' :
-                          notification.type === 'emergency' ? 'text-orange-600' :
-                          'text-yellow-600'
-                        }`}>
-                          {notification.message}
-                        </p>
-                        {notification.details && (
-                          <p className={`text-xs mt-1 ${
-                            notification.type === 'blood' ? 'text-red-500' : 'text-gray-500'
-                          }`}>
-                            {notification.details}
-                          </p>
+                    {/* Progress Bar */}
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-600">Daily Progress</span>
+                        <span className="text-sm text-gray-600">{Math.round(completionPercentage)}% Complete</span>
+                      </div>
+                      <Progress value={completionPercentage} className="h-2" />
+                    </div>
+
+                    {/* Patient List */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-4">Current Patients ({doctor.patients.length})</h4>
+                      <div className="space-y-3">
+                        {doctor.patients.slice(0, 5).map((patient, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{patient.name}</p>
+                                <p className="text-sm text-gray-600">Appointment: {patient.appointmentTime}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <Badge className={getStatusColor(patient.status)}>
+                                {getStatusText(patient.status)}
+                              </Badge>
+                              <p className="text-sm text-gray-600 mt-1">Wait: {patient.estimatedWait}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {doctor.patients.length > 5 && (
+                          <div className="text-center pt-2">
+                            <Button variant="outline" size="sm">
+                              View All {doctor.patients.length} Patients
+                            </Button>
+                          </div>
                         )}
-                        <p className={`text-xs mt-1 ${
-                          notification.type === 'queue' ? 'text-blue-500' :
-                          notification.type === 'appointment' ? 'text-green-500' :
-                          notification.type === 'blood' ? 'text-red-500' :
-                          notification.type === 'emergency' ? 'text-orange-500' :
-                          'text-yellow-500'
-                        }`}>
-                          {notification.time}
-                        </p>
                       </div>
-                    ))}
-                    {notifications.length === 0 && (
-                      <div className="text-center py-4 text-gray-500">
-                        <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">No recent notifications</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tips</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p>• Arrive 15 minutes before your appointment</p>
-                    <p>• Bring your ID and insurance card</p>
-                    <p>• Check in using the app to save time</p>
-                    <p>• Call reception for urgent changes</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-6">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Update Queue
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Users className="h-4 w-4 mr-2" />
+                        Manage Appointments
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Contact Doctor
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </div>
