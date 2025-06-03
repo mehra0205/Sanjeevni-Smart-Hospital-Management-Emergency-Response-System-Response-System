@@ -89,35 +89,42 @@ const Records = () => {
   };
 
   const handleAddNew = (type: 'condition' | 'allergy' | 'surgery') => {
-    const entry = newEntries[type];
-    
-    if (type === 'condition' && entry.condition && entry.date && entry.doctor) {
-      setMedicalData(prev => ({
-        ...prev,
-        conditions: [...prev.conditions, entry as MedicalCondition]
-      }));
-      setNewEntries(prev => ({
-        ...prev,
-        condition: { condition: "", date: "", doctor: "" }
-      }));
-    } else if (type === 'allergy' && entry.name && entry.severity && entry.reaction) {
-      setMedicalData(prev => ({
-        ...prev,
-        allergies: [...prev.allergies, entry as Allergy]
-      }));
-      setNewEntries(prev => ({
-        ...prev,
-        allergy: { name: "", severity: "", reaction: "" }
-      }));
-    } else if (type === 'surgery' && entry.procedure && entry.date && entry.hospital) {
-      setMedicalData(prev => ({
-        ...prev,
-        surgeries: [...prev.surgeries, entry as Surgery]
-      }));
-      setNewEntries(prev => ({
-        ...prev,
-        surgery: { procedure: "", date: "", hospital: "", notes: "" }
-      }));
+    if (type === 'condition') {
+      const entry = newEntries.condition;
+      if (entry.condition && entry.date && entry.doctor) {
+        setMedicalData(prev => ({
+          ...prev,
+          conditions: [...prev.conditions, entry]
+        }));
+        setNewEntries(prev => ({
+          ...prev,
+          condition: { condition: "", date: "", doctor: "" }
+        }));
+      }
+    } else if (type === 'allergy') {
+      const entry = newEntries.allergy;
+      if (entry.name && entry.severity && entry.reaction) {
+        setMedicalData(prev => ({
+          ...prev,
+          allergies: [...prev.allergies, entry]
+        }));
+        setNewEntries(prev => ({
+          ...prev,
+          allergy: { name: "", severity: "", reaction: "" }
+        }));
+      }
+    } else if (type === 'surgery') {
+      const entry = newEntries.surgery;
+      if (entry.procedure && entry.date && entry.hospital) {
+        setMedicalData(prev => ({
+          ...prev,
+          surgeries: [...prev.surgeries, entry]
+        }));
+        setNewEntries(prev => ({
+          ...prev,
+          surgery: { procedure: "", date: "", hospital: "", notes: "" }
+        }));
+      }
     }
     
     toast({
