@@ -20,8 +20,8 @@ const Hero = () => {
                 Get Started
               </Button>
             </Link>
-            <Link to="/login">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-indigo-900 px-8 py-4 text-lg font-semibold">
+            <Link to="/appointments">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-indigo-900 px-8 py-4 text-lg font-semibold bg-transparent">
                 Book Appointment
               </Button>
             </Link>

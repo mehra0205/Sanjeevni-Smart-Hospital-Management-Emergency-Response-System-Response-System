@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import Queue from "./pages/Queue";
+import Prescriptions from "./pages/Prescriptions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/records" element={<Records />} />
+          <Route path="/prescriptions" element={<Prescriptions />} />
           <Route path="/blood-bank" element={<BloodBank />} />
           <Route path="/emergency" element={<Emergency />} />
           <Route path="/emergency-tab" element={<EmergencyTab />} />
